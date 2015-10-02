@@ -12,7 +12,6 @@ from subprocess import call
 from urllib import urlencode
 from urllib2 import build_opener
 from xml.dom import minidom
-from time import mktime
 
 CONFIGURATION = {
     # Show RSS user id
@@ -41,21 +40,18 @@ STAMP_FILE = path.join(path.expanduser("~"), '.show-rss')
 RSS_FEED_URL = 'http://showrss.info/rss.php?' + urlencode(CONFIGURATION)
 
 
-def update_timestamp(date=None):
+def update_timestamp():
     with open(STAMP_FILE, 'a'):
-        if date is None:
-            utime(STAMP_FILE, None)
-        else:
-            date = time.mktime(date.timetuple())
-            utime(STAMP_FILE, (date , date) )
+        utime(STAMP_FILE, None)
 
 def get_timestamp():
     if not path.exists(STAMP_FILE):
+        update_timestamp()
         return None
     modtime = stat(STAMP_FILE).st_mtime
-    odate = datetime.fromtimestamp(modtime)
-    ldate = utc.localize(odate)
-    return ldate, odate
+    date = utc.localize(datetime.fromtimestamp(modtime))
+    update_timestamp()
+    return date
 
 
 def download_feed(url):
@@ -79,18 +75,9 @@ def parse_dates_links(feed):
 
 if __name__ == '__main__':
     timestamp = get_timestamp()
-    latest = None
-    odate = None
-    if timestamp:
-        ldate, odate = timestamp
-        #print "L: ", ldate, " O: ", odate
     feed = download_feed(RSS_FEED_URL)
 
     for date, link in parse_dates_links(feed):
-        if timestamp is None or date > ldate:
-           call(['open', '-g', link])
-            if latest is None or date > latest:
-                latest = date
-    if (latest is None) and (odate is not None):
-        latest = odate
-    update_timestamp(latest)
+        # print link, date
+        if timestamp is None or date > timestamp:
+            call(['open', '-g', link])
