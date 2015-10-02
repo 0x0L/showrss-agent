@@ -5,6 +5,7 @@ install:
 			  read user_id; \
 				sed "s|USER_ID|$$user_id|" showrss_helper.py > ~/bin/showrss_helper.py
 
+	@chmod u+x ~/bin/showrss_helper.py
 	@sed "s|HOME_DIR|$(HOME)|" org.0x0L.showrss.plist \
 			 > ~/Library/LaunchAgents/org.0x0L.showrss.plist
 
@@ -24,5 +25,5 @@ uninstall:
 
 	@echo "➜ Removing files"
 	@rm ~/Library/LaunchAgents/org.0x0L.showrss.plist
-	@rm ~/bin/showrss_helper.py
+	@rm ~/bin/showrss_helper.py*
 # @rm ~/.showrss
