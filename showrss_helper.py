@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-
 """
-    An OSX tool to automate downloads from showRSS
+An OSX tool to automate downloads from showRSS
 """
 
+from time import mktime
 from datetime import datetime
 from dateutil import parser
 from os import path, stat, utime
@@ -12,10 +12,10 @@ from subprocess import call
 from urllib import urlencode
 from urllib2 import build_opener
 from xml.dom import minidom
-from time import mktime
 
 CONFIGURATION = {
     # Show RSS user id
+    # 'user_id': 17065,
     'user_id': USER_ID,
 
     # 'null'  Per show settings,
@@ -37,25 +37,8 @@ CONFIGURATION = {
     # 'raw': 'false',
 }
 
-STAMP_FILE = path.join(path.expanduser("~"), '.show-rss')
+STAMP_FILE = path.join(path.expanduser("~"), '.showrss')
 RSS_FEED_URL = 'http://showrss.info/rss.php?' + urlencode(CONFIGURATION)
-
-
-def update_timestamp(date=None):
-    with open(STAMP_FILE, 'a'):
-        if date is None:
-            utime(STAMP_FILE, None)
-        else:
-            date = time.mktime(date.timetuple())
-            utime(STAMP_FILE, (date , date) )
-
-def get_timestamp():
-    if not path.exists(STAMP_FILE):
-        return None
-    modtime = stat(STAMP_FILE).st_mtime
-    odate = datetime.fromtimestamp(modtime)
-    ldate = utc.localize(odate)
-    return ldate, odate
 
 
 def download_feed(url):
@@ -77,20 +60,26 @@ def parse_dates_links(feed):
     return zip(dates, links)
 
 
-if __name__ == '__main__':
-    timestamp = get_timestamp()
-    latest = None
-    odate = None
-    if timestamp:
-        ldate, odate = timestamp
-        #print "L: ", ldate, " O: ", odate
-    feed = download_feed(RSS_FEED_URL)
+def update_timestamp(date):
+    with open(STAMP_FILE, 'a'):
+        timetuple = mktime(date.timetuple())
+        utime(STAMP_FILE, (timetuple, timetuple))
 
-    for date, link in parse_dates_links(feed):
-        if timestamp is None or date > ldate:
-           call(['open', '-g', link])
-            if latest is None or date > latest:
-                latest = date
-    if (latest is None) and (odate is not None):
-        latest = odate
-    update_timestamp(latest)
+
+def get_timestamp():
+    if not path.exists(STAMP_FILE):
+        return datetime.fromordinal(1)
+    modtime = stat(STAMP_FILE).st_mtime
+    return datetime.fromtimestamp(modtime)
+
+
+if __name__ == '__main__':
+    timestamp = utc.localize(get_timestamp())
+    all_shows = parse_dates_links(download_feed(RSS_FEED_URL))
+    new_shows = filter(lambda x: x[0] > timestamp, all_shows)
+    
+    if new_shows:
+        latest = max(new_shows, key=lambda x: x[0])[0]
+        update_timestamp(latest)
+        for _, link in new_shows:
+            call(['open', '-g', link])

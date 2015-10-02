@@ -3,13 +3,13 @@
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>org.x0l.show-rss</string>
+    <string>org.0x0L.showrss</string>
     <key>LimitLoadToSessionType</key>
     <string>Aqua</string>
     <key>ProgramArguments</key>
     <array>
         <string>/usr/bin/python</string>
-        <string>HOME_DIR/bin/show-rss-helper.py</string>
+        <string>HOME_DIR/bin/showrss_helper.py</string>
     </array>
     <key>RunAtLoad</key>
     <true/>
