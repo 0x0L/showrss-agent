@@ -6,9 +6,14 @@ An OSX tool to automate downloads from showRSS
 from dateutil import parser
 from os import path
 from subprocess import call
-from urllib import urlencode
-from urllib2 import build_opener
 from xml.dom import minidom
+
+try:
+    from urllib import urlencode
+    from urllib2 import build_opener
+except ImportError:
+    from urllib.parse import urlencode
+    from urllib.request import build_opener
 
 CONFIGURATION = {
     # Show RSS user id
@@ -68,7 +73,7 @@ def get_timestamp():
 if __name__ == '__main__':
     timestamp = get_timestamp()
     all_shows = parse_dates_links(download_feed(RSS_FEED_URL))
-    new_shows = filter(lambda x: x[0] > timestamp, all_shows)
+    new_shows = list(filter(lambda x: x[0] > timestamp, all_shows))
 
     if new_shows:
         latest_dt = max(new_shows, key=lambda x: x[0])[0]
