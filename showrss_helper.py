@@ -3,11 +3,8 @@
 An OSX tool to automate downloads from showRSS
 """
 
-from time import mktime
-from datetime import datetime
 from dateutil import parser
-from os import path, stat, utime
-from pytz import utc
+from os import path
 from subprocess import call
 from urllib import urlencode
 from urllib2 import build_opener
@@ -60,26 +57,23 @@ def parse_dates_links(feed):
     return zip(dates, links)
 
 
-def update_timestamp(date):
-    with open(STAMP_FILE, 'a'):
-        timetuple = mktime(date.timetuple())
-        utime(STAMP_FILE, (timetuple, timetuple))
-
-
 def get_timestamp():
-    if not path.exists(STAMP_FILE):
-        return datetime.fromordinal(1)
-    modtime = stat(STAMP_FILE).st_mtime
-    return datetime.fromtimestamp(modtime)
+    dt = '2000-01-01 00:00:00+00:00'
+    if path.exists(STAMP_FILE):
+        with open(STAMP_FILE, 'r') as stamp_file:
+            dt = stamp_file.read()
+    return parser.parse(dt)
 
 
 if __name__ == '__main__':
-    timestamp = utc.localize(get_timestamp())
+    timestamp = get_timestamp()
     all_shows = parse_dates_links(download_feed(RSS_FEED_URL))
     new_shows = filter(lambda x: x[0] > timestamp, all_shows)
-    
+
     if new_shows:
-        latest = max(new_shows, key=lambda x: x[0])[0]
-        update_timestamp(latest)
+        latest_dt = max(new_shows, key=lambda x: x[0])[0]
+        with open(STAMP_FILE, 'w') as stamp_file:
+            stamp_file.write(str(latest_dt))
+
         for _, link in new_shows:
             call(['open', '-g', link])
