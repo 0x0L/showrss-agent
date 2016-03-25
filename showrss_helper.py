@@ -15,24 +15,29 @@ except ImportError:
     from urllib.parse import urlencode
     from urllib.request import build_opener
 
-CONFIGURATION = {
     # Show RSS user id
     # 'user_id': 17065,
-    'user_id': USER_ID,
+    user_id = USER_ID
 
+CONFIGURATION = {
     # 'null'  Per show settings,
     # 0       Only standard torrents,
     # 1       Only 720p HD
     # 2       Both types of torrents
-    'hd': 'null',
+    'quality': 'null',
 
     # 'null'  Per show settings,
     # 0       Skip proper/repack
     # 1       Include proper/repack
-    'proper': 'null',
+    're': 'null',
 
-    # Uncomment this line to use torrent files instead of the magnet protocol
-    # 'magnets': 'false',
+    # Use the magnet protocol (versus mirror URLs)
+    'magnets': 'true',
+
+    # Clean versus raw episode naming
+    # 'null'  Raw episode name
+    # 'clean' Clean episode name
+    'name': 'clean',
 
     # For reference
     # 'namespaces': 'false',
@@ -40,7 +45,7 @@ CONFIGURATION = {
 }
 
 STAMP_FILE = path.join(path.expanduser("~"), '.showrss')
-RSS_FEED_URL = 'http://showrss.info/rss.php?' + urlencode(CONFIGURATION)
+RSS_FEED_URL = 'http://new.showrss.info/user/' + user_id + '.rss?' + urlencode(CONFIGURATION)
 
 
 def download_feed(url):
