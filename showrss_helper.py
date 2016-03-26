@@ -9,56 +9,26 @@ from subprocess import call
 from xml.dom import minidom
 
 try:
-    from urllib import urlencode
     from urllib2 import build_opener
 except ImportError:
-    from urllib.parse import urlencode
     from urllib.request import build_opener
 
-CONFIGURATION = {
-    # Show RSS user id
-    # 'user_id': 17065,
-    'user_id': USER_ID,
 
-    # 'null'  Per show settings,
-    # 0       Only standard torrents,
-    # 1       Only 720p HD
-    # 2       Both types of torrents
-    'hd': 'null',
-
-    # 'null'  Per show settings,
-    # 0       Skip proper/repack
-    # 1       Include proper/repack
-    'proper': 'null',
-
-    # Uncomment this line to use torrent files instead of the magnet protocol
-    # 'magnets': 'false',
-
-    # For reference
-    # 'namespaces': 'false',
-    # 'raw': 'false',
-}
+RSS_FEED_URL = """FEED_URL_CONFIG"""
 
 STAMP_FILE = path.join(path.expanduser("~"), '.showrss')
-RSS_FEED_URL = 'http://showrss.info/rss.php?' + urlencode(CONFIGURATION)
 
 
-def download_feed(url):
+def read_url(url):
     opener = build_opener()
     opener.addheaders = [('User-agent', 'Mozilla/5.0')]
     return opener.open(url, timeout=10).read()
 
 
-def parse_dates_links(feed):
-    xml = minidom.parseString(feed)
-
-    links = [z.firstChild.nodeValue
-             for z in xml.getElementsByTagName('link')[1:]]
-
-    dates = [parser.parse(z.firstChild.nodeValue)
-             for z in xml.getElementsByTagName('pubDate')]
-
-    assert(len(links) == len(dates))
+def parse_feed(feed):
+    get = minidom.parseString(feed).getElementsByTagName
+    dates = (parser.parse(z.firstChild.nodeValue) for z in get('pubDate'))
+    links = (z.firstChild.nodeValue for z in get('link')[1:])
     return zip(dates, links)
 
 
@@ -70,15 +40,19 @@ def get_timestamp():
     return parser.parse(dt)
 
 
+def write_timestamp(dt):
+    with open(STAMP_FILE, 'w') as stamp_file:
+        stamp_file.write(str(dt))
+
+
 if __name__ == '__main__':
     timestamp = get_timestamp()
-    all_shows = parse_dates_links(download_feed(RSS_FEED_URL))
-    new_shows = list(filter(lambda x: x[0] > timestamp, all_shows))
+    all_shows = parse_feed(read_url(RSS_FEED_URL))
+    new_shows = [x for x in all_shows if x[0] > timestamp]
+
+    for _, link in new_shows:
+        call(['open', '-g', link])
 
     if new_shows:
-        latest_dt = max(new_shows, key=lambda x: x[0])[0]
-        with open(STAMP_FILE, 'w') as stamp_file:
-            stamp_file.write(str(latest_dt))
-
-        for _, link in new_shows:
-            call(['open', '-g', link])
+        times, _ = zip(*new_shows)
+        write_timestamp(max(times))
