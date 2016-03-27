@@ -2,7 +2,7 @@
 
 read FEED_URL
 
-FEED_URL=$(echo "$FEED_URL" | sed 's/&/\\&/g')
+FEED_URL=$(echo "$FEED_URL" | sed 's/&/\\&/g' | sed 's/https/http/')
 
 mkdir -p ~/bin
 
