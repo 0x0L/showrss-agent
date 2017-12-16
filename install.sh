@@ -14,6 +14,7 @@ chmod u+x ~/bin/showrss_helper.py
 
 echo "➜ Starting agent"
 
+mkdir -p ~/Library/LaunchAgents/
 sed "s|HOME_DIR|$HOME|" org.0x0L.showrss.plist \
 		> ~/Library/LaunchAgents/org.0x0L.showrss.plist
 
