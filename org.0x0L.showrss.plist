@@ -8,7 +8,7 @@
     <string>Aqua</string>
     <key>ProgramArguments</key>
     <array>
-        <string>/usr/bin/python</string>
+        <string>/usr/bin/python3</string>
         <string>HOME_DIR/bin/showrss_helper.py</string>
     </array>
     <key>RunAtLoad</key>
