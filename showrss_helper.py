@@ -15,10 +15,6 @@ URL = """http://showrss.info/user/35118.rss?magnets=true&namespaces=true&name=cl
 STAMP_FILE = path.join(path.expanduser("~"), ".showrss")
 
 
-def parse_date(date):
-    return
-
-
 def read_url(url):
     opener = build_opener()
     opener.addheaders = [("User-agent", "Mozilla/5.0")]
